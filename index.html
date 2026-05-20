@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Escala de Voluntários — Barraca de Pastel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #F5F5F5; min-height: 100vh; padding: 1rem; }
+  .container { max-width: 680px; margin: 0 auto; }
+ 
+  .header { border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: #C62828; }
+  .flags { display: flex; height: 10px; border-radius: 8px 8px 0 0; overflow: hidden; margin: -1.25rem -1.5rem 1rem; }
+  .flag { flex: 1; }
+  .header h1 { color: #fff; font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .header p { color: #FFCDD2; font-size: 14px; }
+ 
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .stat { border-radius: 8px; padding: 1rem; text-align: center; }
+  .st1 { background: #FFF8E1; border: 1.5px solid #F9A825; }
+  .st2 { background: #E8F5E9; border: 1.5px solid #2E7D32; }
+  .st3 { background: #FBE9E7; border: 1.5px solid #BF360C; }
+  .stat .lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .st1 .lbl { color: #E65100; } .st2 .lbl { color: #1B5E20; } .st3 .lbl { color: #BF360C; }
+  .stat .val { font-size: 28px; font-weight: 600; }
+  .st1 .val { color: #BF360C; } .st2 .val { color: #1B5E20; } .st3 .val { color: #BF360C; }
+ 
+  .section-label { font-size: 13px; color: #757575; margin-bottom: 8px; }
+  .error-box { padding: 1rem 1.25rem; background: #FFEBEE; border: 1px solid #EF9A9A; border-radius: 8px; color: #B71C1C; font-size: 14px; margin-bottom: 1rem; display: none; }
+  .loading-box { text-align: center; padding: 2.5rem; color: #9E9E9E; font-size: 15px; }
+ 
+  .day-card { border-radius: 12px; margin-bottom: 10px; overflow: hidden; border: 2px solid; background: #fff; }
+  .day-card.sabado { border-color: #EF9A9A; }
+  .day-card.domingo { border-color: #90CAF9; }
+  .day-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .sabado .day-header { background: #FFEBEE; }
+  .domingo .day-header { background: #E3F2FD; }
+  .day-header:hover { filter: brightness(0.96); }
+ 
+  .day-num { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+  .sabado .day-num { background: #C62828; color: #fff; }
+  .domingo .day-num { background: #1565C0; color: #fff; }
+ 
+  .day-info { flex: 1; }
+  .day-name { font-size: 17px; font-weight: 600; }
+  .sabado .day-name { color: #B71C1C; } .domingo .day-name { color: #0D47A1; }
+  .day-sub { font-size: 13px; color: #757575; margin-top: 2px; }
+ 
+  .day-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+  .day-count { font-size: 14px; font-weight: 600; }
+  .sabado .day-count { color: #C62828; } .domingo .day-count { color: #1565C0; }
+  .mini-bar { width: 64px; height: 6px; border-radius: 99px; background: rgba(0,0,0,0.1); overflow: hidden; }
+  .mini-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+  .sabado .mini-fill { background: #C62828; } .domingo .mini-fill { background: #1565C0; }
+  .chevron { font-size: 20px; color: #9E9E9E; transition: transform 0.2s; flex-shrink: 0; }
+  .chevron.open { transform: rotate(180deg); }
+ 
+  .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; padding: 12px 14px 14px; background: #fff; }
+  .slot { border-radius: 8px; padding: 10px 12px; border: 1.5px dashed #BDBDBD; background: #FAFAFA; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.15s; min-height: 52px; }
+  .slot:hover { border-style: solid; background: #F5F5F5; }
+  .sabado .slot:hover { border-color: #E53935; }
+  .domingo .slot:hover { border-color: #1E88E5; }
+  .slot.filled { border-style: solid; border-color: #A5D6A7; background: #F1F8E9; }
+ 
+  .avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+  .avatar-empty { background: #E0E0E0; color: #9E9E9E; }
+  .sabado .slot.filled .avatar { background: #FFCDD2; color: #C62828; }
+  .domingo .slot.filled .avatar { background: #BBDEFB; color: #1565C0; }
+  .slot-txt { overflow: hidden; }
+  .slot-num-lbl { font-size: 11px; color: #9E9E9E; margin-bottom: 2px; }
+  .slot-name { font-size: 14px; color: #424242; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-name.empty { color: #BDBDBD; font-style: italic; }
+ 
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #2E7D32; color: #fff; padding: 10px 24px; border-radius: 99px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
+  .toast.show { opacity: 1; } .toast.erro { background: #C62828; }
+ 
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+  .overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 16px 16px 0 0; padding: 1.5rem 1.5rem 2rem; width: 100%; max-width: 480px; border-top: 4px solid #C62828; }
+  .modal.domingo { border-top-color: #1565C0; }
+  .modal h3 { font-size: 18px; font-weight: 600; color: #212121; margin-bottom: 4px; }
+  .modal p { font-size: 14px; color: #757575; margin-bottom: 1.25rem; }
+  .modal input { width: 100%; font-size: 16px; margin-bottom: 14px; padding: 10px 12px; border: 1.5px solid #BDBDBD; border-radius: 8px; outline: none; color: #212121; font-family: inherit; }
+  .modal input:focus { border-color: #C62828; }
+  .modal.domingo input:focus { border-color: #1565C0; }
+  .modal-btns { display: flex; gap: 8px; }
+  .modal-btns button { flex: 1; padding: 12px; font-size: 15px; border-radius: 8px; cursor: pointer; border: 1.5px solid #BDBDBD; background: #F5F5F5; color: #424242; font-family: inherit; }
+  .btn-ok { background: #C62828 !important; color: #fff !important; border-color: #C62828 !important; font-weight: 600 !important; }
+  .modal.domingo .btn-ok { background: #1565C0 !important; border-color: #1565C0 !important; }
+  .btn-del { color: #C62828 !important; border-color: #EF9A9A !important; background: #fff !important; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="flags" id="flags"></div>
+    <h1>🎪 Barraca de Pastel</h1>
+    <p>Arraiá Junino · Paróquia São Benedito · Junho 2025 · A partir das 18h</p>
+  </div>
+ 
+  <div class="stats">
+    <div class="stat st1"><div class="lbl">Total de vagas</div><div class="val">56</div></div>
+    <div class="stat st2"><div class="lbl">Preenchidas</div><div class="val" id="s-filled">—</div></div>
+    <div class="stat st3"><div class="lbl">Disponíveis</div><div class="val" id="s-open">—</div></div>
+  </div>
+ 
+  <p class="section-label">Toque em um dia para ver as vagas</p>
+  <div id="error-box" class="error-box"></div>
+  <div id="list"><div class="loading-box">⏳ Carregando dados da planilha...</div></div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <h3 id="m-title"></h3>
+    <p id="m-sub"></p>
+    <input type="text" id="m-input" placeholder="Seu nome completo" maxlength="40" />
+    <div class="modal-btns">
+      <button class="btn-del" id="btn-del" onclick="erase()" style="display:none">Apagar</button>
+      <button onclick="closeModal()">Cancelar</button>
+      <button class="btn-ok" onclick="confirmName()">Confirmar</button>
+    </div>
+  </div>
+</div>
+ 
+<script>
+const API = "https://script.google.com/macros/s/AKfycbz5RadQxIYsAGIL0tqMDrI-XCNU86XqIOwB-svS8PNdf4MbgDTmW0Fkt733-Kd9sud1/exec";
+const DAYS = [
+  {id:'d1',label:'Sábado', date:'06',type:'sabado'},
+  {id:'d2',label:'Domingo',date:'07',type:'domingo'},
+  {id:'d3',label:'Sábado', date:'13',type:'sabado'},
+  {id:'d4',label:'Domingo',date:'14',type:'domingo'},
+  {id:'d5',label:'Sábado', date:'20',type:'sabado'},
+  {id:'d6',label:'Domingo',date:'21',type:'domingo'},
+  {id:'d7',label:'Sábado', date:'27',type:'sabado'},
+  {id:'d8',label:'Domingo',date:'28',type:'domingo'},
+];
+const N = 7;
+let data = {}, openDays = {d1:true}, pending = null;
+ 
+const flagColors = ['#C62828','#1565C0','#2E7D32','#F9A825','#6A1B9A','#BF360C','#00695C','#AD1457','#E65100','#0D47A1'];
+const fl = document.getElementById('flags');
+for(let i=0;i<16;i++){const d=document.createElement('div');d.className='flag';d.style.background=flagColors[i%flagColors.length];fl.appendChild(d);}
+ 
+function initials(n){return n.trim().split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');}
+ 
+function showToast(msg, erro=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(erro?' erro':'');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+}
+ 
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='_cb_'+Date.now()+'_'+Math.floor(Math.random()*9999);
+    const s=document.createElement('script');
+    const timer=setTimeout(()=>{cleanup();reject(new Error('Timeout'));},12000);
+    function cleanup(){clearTimeout(timer);delete window[cb];s.parentNode&&s.parentNode.removeChild(s);}
+    window[cb]=(d)=>{cleanup();resolve(d);};
+    s.onerror=()=>{cleanup();reject(new Error('Falha ao conectar'));};
+    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb+'&t='+Date.now();
+    document.head.appendChild(s);
+  });
+}
+ 
+async function load(){
+  try{
+    const res=await jsonp(API+'?action=load');
+    if(!res.ok) throw new Error(res.error||'Resposta inválida');
+    data=res.data;
+    document.getElementById('error-box').style.display='none';
+    render();
+  }catch(e){
+    document.getElementById('list').innerHTML='';
+    const eb=document.getElementById('error-box');
+    eb.textContent='❌ Erro ao carregar: '+e.message+'. Verifique se o Apps Script está publicado para "Qualquer pessoa".';
+    eb.style.display='block';
+  }
+}
+ 
+async function saveSlot(dayId,idx,name){
+  try{
+    const url=API+'?action=save&dayId='+encodeURIComponent(dayId)+'&idx='+idx+'&name='+encodeURIComponent(name);
+    const res=await jsonp(url);
+    if(!res.ok) throw new Error(res.error);
+    showToast('✅ Salvo na planilha!');
+  }catch(e){
+    showToast('❌ Erro ao salvar: '+e.message,true);
+  }
+}
+ 
+function updateStats(){
+  let f=0; for(const d of DAYS) f+=(data[d.id]||[]).filter(v=>v.trim()).length;
+  document.getElementById('s-filled').textContent=f;
+  document.getElementById('s-open').textContent=DAYS.length*N-f;
+}
+ 
+function toggle(id){openDays[id]=!openDays[id];render();}
+ 
+function render(){
+  const list=document.getElementById('list'); list.innerHTML='';
+  for(const day of DAYS){
+    const slots=data[day.id]||Array(N).fill('');
+    const filled=slots.filter(v=>v.trim()).length;
+    const pct=Math.round(filled/N*100);
+    const isOpen=!!openDays[day.id];
+    const card=document.createElement('div');
+    card.className='day-card '+day.type;
+    card.innerHTML=`
+      <div class="day-header" onclick="toggle('${day.id}')">
+        <div class="day-num">${day.date}</div>
+        <div class="day-info">
+          <div class="day-name">${day.label}, dia ${day.date} de junho</div>
+          <div class="day-sub">Santa Missa e Festa Social · 18h</div>
+        </div>
+        <div class="day-right">
+          <div class="day-count">${filled} / ${N}</div>
+          <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
+        </div>
+        <i class="ti ti-chevron-down chevron ${isOpen?'open':''}"></i>
+      </div>
+      ${isOpen?`<div class="slots" id="s-${day.id}"></div>`:''}
+    `;
+    list.appendChild(card);
+    if(isOpen){
+      const se=card.querySelector('#s-'+day.id);
+      for(let i=0;i<N;i++){
+        const val=(slots[i]||'').trim();
+        const div=document.createElement('div');
+        div.className='slot'+(val?' filled':'');
+        div.onclick=()=>openModal(day.id,i,val,day.type);
+        const av=val
+          ?`<div class="avatar">${initials(val)}</div>`
+          :`<div class="avatar avatar-empty"><i class="ti ti-plus" style="font-size:16px"></i></div>`;
+        div.innerHTML=`${av}<div class="slot-txt"><div class="slot-num-lbl">Voluntário ${i+1}</div><div class="slot-name ${val?'':'empty'}">${val||'Disponível'}</div></div>`;
+        se.appendChild(div);
+      }
+    }
+  }
+  updateStats();
+}
+ 
+function openModal(dayId,idx,val,type){
+  pending={dayId,idx,type};
+  const day=DAYS.find(d=>d.id===dayId);
+  document.getElementById('m-title').textContent=val?`Editar voluntário ${idx+1}`:`Escalar para ${day.label}, dia ${day.date}`;
+  document.getElementById('m-sub').textContent=`Junho · Voluntário ${idx+1} de ${N}`;
+  document.getElementById('m-input').value=val||'';
+  document.getElementById('btn-del').style.display=val?'block':'none';
+  document.getElementById('modal').className='modal'+(type==='domingo'?' domingo':'');
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('m-input').focus(),80);
+}
+ 
+function closeModal(){document.getElementById('overlay').classList.remove('open');pending=null;}
+ 
+async function confirmName(){
+  if(!pending)return;
+  const name=document.getElementById('m-input').value.trim();
+  if(!name)return;
+  const {dayId,idx}=pending;
+  data[dayId][idx]=name;
+  closeModal(); render();
+  await saveSlot(dayId,idx,name);
+}
+ 
+async function erase(){
+  if(!pending)return;
+  const {dayId,idx}=pending;
+  data[dayId][idx]='';
+  closeModal(); render();
+  await saveSlot(dayId,idx,'');
+}
+ 
+document.getElementById('m-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmName();if(e.key==='Escape')closeModal();});
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
+ 
+load();
+</script>
+</body>
+</html>
+ 
